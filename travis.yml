@@ -1,0 +1,68 @@
+language: python
+
+python:
+  - 3.6
+
+os:
+  - linux
+  - linux-ppc64le
+
+env:
+  - DOCKERFILE=Dockerfile IMAGE=test
+  - DOCKERFILE=Dockerfile.pai IMAGE=powerai
+
+matrix:
+  exclude:
+  - env: DOCKERFILE=Dockerfile IMAGE=test
+    os: linux-ppc64le
+
+services:
+  - docker
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux-ppc64le" ]]; then
+      ARCH=ppc64le;
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      ARCH=x86_64;
+    fi
+  - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
+      VERSION=latest
+    else
+      VERSION=$TRAVIS_BRANCH
+    fi
+  - mkdir -p ~/.docker
+  - echo '{"experimental":"enabled"}' | tee ~/.docker/config.json 
+  - sudo service docker restart
+
+install:
+  - docker build -f "$DOCKERFILE" -t ajbozarth/max-base:"$IMAGE"-"$ARCH"-"$VERSION" .
+
+before_script:
+  - docker run -it --rm -d -p 5000:5000 ajbozarth/max-base:"$IMAGE"-"$ARCH"-"$VERSION"
+  - sleep 10
+
+script:
+  - docker ps | grep ajbozarth/max-base:"$IMAGE"-"$ARCH"-"$VERSION"
+
+after_success:
+  - if [[ "$IMAGE" != "test" && "$TRAVIS_PULL_REQUEST" == "false" ]] && [[ "$TRAVIS_BRANCH" == "master" || "$TRAVIS_BRANCH" == "$TRAVIS_TAG" ]]; then
+      echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin;
+      docker push ajbozarth/max-base:"$IMAGE"-"$ARCH"-"$VERSION";
+    fi
+
+jobs:
+  include:
+    - stage: "Docker Manifest"
+      if: branch = master OR tag IS present
+      script:
+      - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
+          VERSION=latest
+        else
+          VERSION=$TRAVIS_BRANCH
+        fi
+        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin;
+        docker pull ajbozarth/max-base:powerai-ppc64le-"$VERSION";
+        docker pull ajbozarth/max-base:powerai-x86_64-"$VERSION";
+        docker manifest create ajbozarth/max-base:powerai-"$VERSION" ajbozarth/max-base:powerai-ppc64le-"$VERSION" ajbozarth/max-base:powerai-x86_64-"$VERSION";
+        docker manifest push ajbozarth/max-base:powerai-"$VERSION";
