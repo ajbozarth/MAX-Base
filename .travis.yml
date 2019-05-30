@@ -3,29 +3,6 @@ language: python
 python:
   - 3.6
 
-matrix:
-  include:
-  - os: linux
-    env: DOCKERFILE=Dockerfile IMAGE=test ARCH=x86_64
-  - os: linux
-    env: DOCKERFILE=Dockerfile.pai IMAGE=powerai ARCH=x86_64
-  - os: linux-ppc64le
-    env: DOCKERFILE=Dockerfile.pai IMAGE=powerai ARCH=ppc64le
-  - if: type = push AND (branch = master OR tag IS present)
-    stage: "Docker Manifest"
-    install:
-    before_script:
-      - mkdir -p ~/.docker
-      - echo '{"experimental":"enabled"}' | tee ~/.docker/config.json 
-      - sudo service docker restart
-    script:
-      - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin;
-      - docker pull ajbozarth/max-base:powerai-ppc64le-"$VERSION";
-      - docker pull ajbozarth/max-base:powerai-x86_64-"$VERSION";
-      - docker manifest create ajbozarth/max-base:powerai-"$VERSION" ajbozarth/max-base:powerai-ppc64le-"$VERSION" ajbozarth/max-base:powerai-x86_64-"$VERSION";
-      - docker manifest push ajbozarth/max-base:powerai-"$VERSION";
-    after_success:
-
 services:
   - docker
 
@@ -51,3 +28,26 @@ after_success:
       echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin;
       docker push ajbozarth/max-base:"$IMAGE"-"$ARCH"-"$VERSION";
     fi
+
+matrix:
+  include:
+  - os: linux
+    env: DOCKERFILE=Dockerfile IMAGE=test ARCH=x86_64
+  - os: linux
+    env: DOCKERFILE=Dockerfile.pai IMAGE=powerai ARCH=x86_64
+  - os: linux-ppc64le
+    env: DOCKERFILE=Dockerfile.pai IMAGE=powerai ARCH=ppc64le
+  - if: type = push AND (branch = master OR tag IS present)
+    stage: "Docker Manifest"
+    install:
+    before_script:
+      - mkdir -p ~/.docker
+      - echo '{"experimental":"enabled"}' | tee ~/.docker/config.json 
+      - sudo service docker restart
+    script:
+      - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin;
+      - docker pull ajbozarth/max-base:powerai-ppc64le-"$VERSION";
+      - docker pull ajbozarth/max-base:powerai-x86_64-"$VERSION";
+      - docker manifest create ajbozarth/max-base:powerai-"$VERSION" ajbozarth/max-base:powerai-ppc64le-"$VERSION" ajbozarth/max-base:powerai-x86_64-"$VERSION";
+      - docker manifest push ajbozarth/max-base:powerai-"$VERSION";
+    after_success:
