@@ -3,29 +3,19 @@ language: python
 python:
   - 3.6
 
-os:
-  - linux
-  - linux-ppc64le
-
-env:
-  - DOCKERFILE=Dockerfile IMAGE=test
-  - DOCKERFILE=Dockerfile.pai IMAGE=powerai
-
 matrix:
-  exclude:
-  - env: DOCKERFILE=Dockerfile IMAGE=test
-    os: linux-ppc64le
-
+  include:
+  - os: linux
+    env: DOCKERFILE=Dockerfile IMAGE=test ARCH=x86_64
+  - os: linux
+    env: DOCKERFILE=Dockerfile.pai IMAGE=powerai ARCH=x86_64
+  - os: linux-ppc64le
+    env: DOCKERFILE=Dockerfile.pai IMAGE=powerai ARCH=ppc64le
+    
 services:
   - docker
 
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      ARCH=x86_64;
-    fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux-ppc64le" ]]; then
-      ARCH=ppc64le;
-    fi
   - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
       VERSION=latest;
     else
