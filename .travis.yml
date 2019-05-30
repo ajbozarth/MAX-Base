@@ -27,9 +27,9 @@ before_install:
       ARCH=x86_64;
     fi
   - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
-      VERSION=latest
+      VERSION=latest;
     else
-      VERSION=$TRAVIS_BRANCH
+      VERSION=$TRAVIS_BRANCH;
     fi
   - mkdir -p ~/.docker
   - echo '{"experimental":"enabled"}' | tee ~/.docker/config.json 
@@ -57,9 +57,9 @@ jobs:
       if: branch = master OR tag IS present
       script:
       - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
-          VERSION=latest
+          VERSION=latest;
         else
-          VERSION=$TRAVIS_BRANCH
+          VERSION=$TRAVIS_BRANCH;
         fi
         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin;
         docker pull ajbozarth/max-base:powerai-ppc64le-"$VERSION";
