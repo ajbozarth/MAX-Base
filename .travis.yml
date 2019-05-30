@@ -26,6 +26,11 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       ARCH=x86_64;
     fi
+  - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
+      VERSION=latest;
+    else
+      VERSION=$TRAVIS_BRANCH;
+    fi
 
 install:
   - docker build -f "$DOCKERFILE" -t ajbozarth/max-base:"$IMAGE"-"$ARCH"-"$VERSION" .
@@ -49,11 +54,6 @@ jobs:
       stage: "Docker Manifest"
       install:
       before_script:
-        - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
-            VERSION=latest;
-          else
-            VERSION=$TRAVIS_BRANCH;
-          fi
         - mkdir -p ~/.docker
         - echo '{"experimental":"enabled"}' | tee ~/.docker/config.json 
         - sudo service docker restart
