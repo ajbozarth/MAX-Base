@@ -20,11 +20,11 @@ services:
   - docker
 
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux-ppc64le" ]]; then
-      ARCH=ppc64le;
-    fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       ARCH=x86_64;
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux-ppc64le" ]]; then
+      ARCH=ppc64le;
     fi
   - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
       VERSION=latest;
