@@ -39,12 +39,14 @@ matrix:
     env: DOCKERFILE=Dockerfile.pai IMAGE=powerai ARCH=ppc64le
   - if: type = push AND (branch = master OR tag IS present)
     stage: "Docker Manifest"
+    addons:
+      apt:
+        packages:
+          - docker-ce
     install:
     before_script:
-      - mkdir -p ~/.docker
-      - echo '{"experimental":"enabled"}' | tee ~/.docker/config.json 
-      - sudo service docker restart
     script:
+      - export DOCKER_CLI_EXPERIMENTAL=enabled
       - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin;
       - docker pull ajbozarth/max-base:powerai-ppc64le-"$VERSION";
       - docker pull ajbozarth/max-base:powerai-x86_64-"$VERSION";
