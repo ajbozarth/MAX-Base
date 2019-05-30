@@ -45,7 +45,7 @@ after_success:
 
 jobs:
   include:
-    - if: branch = master OR tag IS present
+    - if: type = push AND (branch = master OR tag IS present)
       stage: "Docker Manifest"
       install:
       before_script:
